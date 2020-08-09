@@ -1,0 +1,31 @@
+string BatchFile = "c:\\eagle-7.6.0\\get qr and convert.bat";
+
+// variant must be set to none to generate gerbers
+setvariant("");
+
+string url;
+int result = dlgDialog("Fetch QR Image") {
+	dlgLabel("Enter link that should go in QR code:");
+	dlgStringEdit(url);
+	dlgSpacing(10);
+	dlgHBoxLayout {
+		dlgStretch(1);
+		dlgPushButton("+OK") { dlgAccept(); };
+	} 
+};
+
+if ("" != url) {
+	project.board(B) {
+		string cmd = BatchFile + " \"" + url + "\" \"" + filedir(B.name) + "\"";
+		int result = system(cmd);
+		if (result != 0) {
+			string msg;
+			sprintf(msg, "error - result was: %d\ncmd was: %s", result, cmd);
+			dlgDialog("") {
+				dlgVBoxLayout {
+					dlgTextView(msg);
+				} 
+			};
+		}
+	}
+}

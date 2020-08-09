@@ -1,0 +1,56 @@
+int WireNumbersLayer = 100;
+string gapStart;
+string gapSize;
+string gapStop;
+int gapStartInt;
+int gapSizeInt;
+int gapStopInt;
+
+int Result = dlgDialog("Insert Gap") {
+	dlgHBoxLayout {
+		dlgStretch(1);
+		dlgLabel("Enter number where gap should be inserted");
+		dlgStretch(1);
+	}
+  
+	dlgHBoxLayout {
+		dlgLabel("Gap start (inclusive):");
+		dlgStringEdit(gapStart);
+		dlgSpacing(10);
+		dlgLabel("Gap size:");
+		dlgStringEdit(gapSize);
+		dlgSpacing(10);
+		dlgLabel("Gap stop (inclusive):");
+		dlgStringEdit(gapStop);
+	}
+	
+	dlgHBoxLayout {
+		dlgStretch(1);
+		dlgPushButton("+OK")    dlgAccept();
+		dlgPushButton("Cancel") dlgReject();
+	}
+}; 
+
+string commandString;
+if (1 == Result) {
+	gapStartInt = strtol(gapStart);	
+	gapSizeInt = strtol(gapSize);	
+	gapStopInt = strtol(gapStop);	
+	schematic(SCH) {
+		SCH.sheets(S) {
+			S.texts(T) {
+				if (WireNumbersLayer == T.layer) {
+					int num = strtol(T.value);
+					if ((num >= gapStartInt) && (num <= gapStopInt)) {
+						// add to list to change
+						string cmd;
+						sprintf(cmd, "CHANGE TEXT %d (%.3f %.3f);\n", num+gapSizeInt, u2inch(T.x), u2inch(T.y));
+						commandString += cmd;
+					}
+				}
+			}
+		}
+    }
+	
+	exit(commandString);
+}

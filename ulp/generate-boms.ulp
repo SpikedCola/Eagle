@@ -1,0 +1,55 @@
+// fake command line arguments for bom-ex
+// bom-ex modified to not show app dialog if S param is passed
+argc = 2;
+argv[1] = "S";
+
+#include "bom-ex.ulp"
+
+void processBOM(string currentVariant) {
+	// set eagle to x variant
+	setvariant(currentVariant);
+
+	// update bom-ex for x variant
+	CollectPartData(currentVariant);
+
+	// generate a list grouped by values
+	GenerateValueList();
+
+	// get list as csv
+	string list = MakeListTextCSV();
+
+	string newname;
+	string fullpath;
+
+	// get current filename (just name, no ext or path)
+	schematic(SCH) {
+		fullpath = SCH.name;
+		newname = filesetext(filename(fullpath), "");
+	}
+	newname += " BOM";
+
+	// get current variant and append to new name
+	//string currentVariant = variant();
+	if ("''" != currentVariant) {
+		newname += " ("+currentVariant+")";
+	}
+	newname += ".csv";
+
+	// replace old filename with new filename
+	fullpath = str_replace(filename(fullpath), newname, fullpath);
+
+	// write out to file
+	output(fullpath, "wt") {
+		printf("%s",list);
+	};
+
+	// process bom file
+	system("php \"e:\\dropbox\\process-bom.php\" \""+fullpath+"\"");
+}
+
+// loop variants, process a bom for each
+schematic(SCH) {
+	SCH.variantdefs(VD) {
+		processBOM(VD.name);
+	}
+}

@@ -1,0 +1,13 @@
+string BatchFile = "c:\\eagle-7.6.0\\Generate Gerbers & Images.bat";
+
+// variant must be set to none to generate gerbers
+setvariant("");
+
+project.board(B) {
+	int result = system(BatchFile + " \"" + B.name + "\"");
+	if (result != 0) {
+		string msg;
+		sprintf(msg, "error - result was %d", result);
+		dlgMessageBox(msg);
+	}
+}

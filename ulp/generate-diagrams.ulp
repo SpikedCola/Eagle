@@ -1,0 +1,23 @@
+string BatchFile = "c:\\eagle-7.6.0\\Generate Diagrams.exe";
+string BoardName;
+int Result; 
+
+project.board(B) {
+	BoardName = B.name;
+}
+
+schematic(SCH) {
+	SCH.variantdefs(VD) {
+		string variantName = VD.name;
+		// with no variant, name contains '' instead of an empty string for some reason - fix it
+		if (variantName == "''") {
+			variantName = "";
+		}
+		int result = system(BatchFile + " \"" + BoardName + "\" \"" + variantName + "\"");
+		if (result != 0) {
+			string msg;
+			sprintf(msg, "error - result was %d for variant %s", result, variantName);
+			dlgMessageBox(msg);
+		}
+	}
+}

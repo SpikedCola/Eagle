@@ -1,0 +1,219 @@
+int    maxX = INT_MIN;
+int    minX = INT_MAX;
+int    maxY = INT_MIN;
+int    minY = INT_MAX;
+
+// change uval to change unit (1 = mm)
+
+int    uval = 1;
+string unit[] = { "Micron", "mm", "Mil", "Inch" };
+int    unitPrec[] = { 0, 1, 1, 3 }, RoundFactor = pow(10, unitPrec[uval]);
+string boardname;
+
+	   
+// find string s2 in s1, and replace with s3
+string replace_string(string s1, string s2, string s3) {
+	int i, pos = 1;
+	string a = s1;
+	while (pos >= 0) {
+		pos = strstr(a, s2);
+		if (pos < 0) break;
+		string st1 = strsub(a, 0, pos);
+		string st2 = strsub(a, pos + strlen(s2));
+		a = st1+s3+st2;
+	}
+	return a;
+}
+   
+real u2u(int v) {
+  switch (uval) {
+    case GRID_UNIT_MIC  : return u2mic(v);
+      break;
+
+    case GRID_UNIT_MM	: return u2mm(v);
+      break;
+
+    case GRID_UNIT_MIL  : return u2mil(v);
+      break;
+
+    case GRID_UNIT_INCH : return u2inch(v);
+      break;
+  }
+}
+
+real WireLength(int x1, int x2, int y1, int y2) {
+  return sqrt( pow(u2u(x2) - u2u(x1), 2) + pow( u2u(y2) - u2u(y1), 2));
+}
+
+void checkmaxmin(int x1, int x2, int y1, int y2, int width) {
+  int w = 0;
+  if (width) w = width/2;  // 2005-07-05 alf
+  if (x1 > maxX) maxX = x1+w;
+  if (x2 > maxX) maxX = x2+w;
+  if (y1 > maxY) maxY = y1+w;
+  if (y2 > maxY) maxY = y2+w;
+  if (x1 < minX) minX = x1-w;
+  if (x2 < minX) minX = x2-w;
+  if (y1 < minY) minY = y1-w;
+  if (y2 < minY) minY = y2-w;
+  return;
+}
+
+
+void checkarc( int x1, int x2, int y1, int y2, int xc, int yc, real angle1, real angle2, real radius, int width) {
+  checkmaxmin( x1, x2, y1, y2, width );
+  if     ( angle2 > angle1 + 270.0) {
+    if     ( angle1 < 90  ) checkmaxmin( x1         , xc - radius, yc + radius, yc - radius, width );
+    else if( angle1 < 180 ) checkmaxmin( xc - radius, xc + radius, y1         , yc - radius, width );
+    else if( angle1 < 270 ) checkmaxmin( x1         , xc + radius, yc - radius, yc + radius, width );
+    else if( angle1 < 360 ) checkmaxmin( xc + radius, xc - radius, y1         , yc + radius, width );
+  }
+  else if( angle2 > angle1 + 180.0) {
+    if     ( angle1 < 90  ) checkmaxmin( x1         , xc - radius, yc + radius, y2         , width );
+    else if( angle1 < 180 ) checkmaxmin( x1         , xc - radius, yc - radius, y2         , width );
+    else if( angle1 < 270 ) checkmaxmin( x1         , xc + radius, yc - radius, y2         , width );
+    else if( angle1 < 360 ) checkmaxmin( x1         , xc + radius, yc + radius, y2         , width );
+  }
+  else if( angle2 > angle1 + 90.0 ) {
+    if     ( angle1 < 90  ) checkmaxmin( x1         , x2         , yc + radius, y2         , width );
+    else if( angle1 < 180 ) checkmaxmin( x1         , xc - radius, y1         , y2         , width );
+    else if( angle1 < 270 ) checkmaxmin( x1         , x2         , yc - radius, y2         , width );
+    else if( angle1 < 360 ) checkmaxmin( x1         , xc + radius, y1         , y2         , width );
+  }
+  else { // 2010-10-13 alf
+    if     ( angle1 <  90 && angle2 >  90 ) checkmaxmin( x1         , x2         , yc + radius, y2         , width );
+    else if( angle1 < 180 && angle2 > 180 ) checkmaxmin( x1         , xc - radius, y1         , y2         , width );
+    else if( angle1 < 270 && angle2 > 270 ) checkmaxmin( x1         , x2         , yc - radius, y2         , width );
+    else if( angle1 < 360 && angle2 > 360 ) checkmaxmin( x1         , xc + radius, y1         , y2         , width );
+  }
+  return;
+}
+
+void checkHole( int x, int y, int drill ) {
+  checkmaxmin( x - drill/2, x + drill/2, y - drill/2, y + drill/2 , 0);
+  return;
+}
+
+void checksmd( int x, int y, int smddx, int smddy, int Layer) {
+  int dx2 = smddx / 2;
+  int dy2 = smddx / 2;
+  checkmaxmin( x + dx2, x - dx2, y + dy2, y - dy2, 0 );
+  return;
+}
+
+void checkpad( int x, int y, int diameter1, int diameter16, int shape1, int shape16, int P_elongation) {
+  int d = diameter1;
+  int d2 = diameter1 / 2;
+  if (shape16 == PAD_SHAPE_LONG)   d = diameter1 * (diameter1 * P_elongation / 100);
+  if (shape16 == PAD_SHAPE_OFFSET) d = diameter1 * (diameter1 * P_elongation / 100) * 1.5;
+  checkmaxmin( x + d2, x - d2, y + d2, y - d2, 0 );
+  return;
+}
+
+
+void resetMaxMin(void) {
+  maxX = INT_MIN;
+  minX = INT_MAX;
+  maxY = INT_MIN;
+  minY = INT_MAX;
+  return;
+}
+
+real used_area(UL_ELEMENT E) {
+  resetMaxMin();
+  E.package.circles(C) {
+    if (C.layer == 1 || C.layer == 16 || C.layer == 21 ||  C.layer == 22 ||  C.layer == 51 ||  C.layer == 52 )
+        checkmaxmin( C.x - C.radius, C.x + C.radius, C.y - C.radius, C.y + C.radius, C.width );
+  }
+  E.package.wires(W) {
+    if (W.layer == 1 || W.layer == 16 || W.layer == 21 ||  W.layer == 22 ||  W.layer == 51 ||  W.layer == 52 ) {
+      if (W.arc) {
+        checkarc(W.arc.x1, W.arc.x2, W.arc.y1, W.arc.y2, W.arc.xc, W.arc.yc, W.arc.angle1, W.arc.angle2, W.arc.radius, W.width);
+      }
+      else  checkmaxmin( W.x1, W.x2, W.y1, W.y2, W.width );
+    }
+  }
+  E.package.contacts(CON) {
+    if (CON.pad) checkpad(CON.pad.x, CON.pad.y, CON.pad.diameter[1], CON.pad.diameter[16], CON.pad.shape[1], CON.pad.shape[16], CON.pad.elongation);
+    else         checksmd(CON.smd.x, CON.smd.y, CON.smd.dx[CON.smd.layer], CON.smd.dy[CON.smd.layer], CON.smd.layer);
+  }
+  E.package.holes(H)  checkHole( H.x, H.y, H.drill );
+  E.package.rectangles(R) {
+    if (R.layer == 1 || R.layer == 16 || R.layer == 21 ||  R.layer == 22 ||  R.layer == 51 ||  R.layer == 52 )
+        checkmaxmin( R.x1, R.x2, R.y1, R.y2, 0 );
+  }
+  E.package.texts(T) {
+    T.wires(W) {
+      if (W.layer == 1 || W.layer == 16 || W.layer == 21 ||  W.layer == 22 ||  W.layer == 51 ||  W.layer == 52 ) {
+        if (W.arc) {
+          checkarc(W.arc.x1, W.arc.x2, W.arc.y1, W.arc.y2, W.arc.xc, W.arc.yc, W.arc.angle1, W.arc.angle2, W.arc.radius, W.width);
+        }
+        else  checkmaxmin( W.x1, W.x2, W.y1, W.y2, W.width );
+      }
+    }
+  }
+  int mx = maxX -  minX;
+  int my = maxY -  minY;
+  return u2u(mx) * u2u(my);
+}
+
+
+// main
+project.board(B) {
+		boardname = B.name;
+		status("Elements");
+		B.elements(E) {
+			// calculate over xPlace/xDocu/PAD/SMD  12.05.2005 alf@cadsoft.de
+			used_area(E); // berechne für jedes Element(Package) den benötigten Platz
+		}
+
+		resetMaxMin();
+		status("Wires");
+		B.wires(W) {
+		  if (W.layer == 20) {
+			if (W.arc) {
+			  checkarc(W.arc.x1, W.arc.x2, W.arc.y1, W.arc.y2, W.arc.xc, W.arc.yc, W.arc.angle1, W.arc.angle2, W.arc.radius, W.width);
+			}
+			else {
+			  checkmaxmin( W.x1, W.x2, W.y1, W.y2, W.width );
+			}
+		  }
+		}
+		status("Circles");
+		B.circles(C) {
+		  if (C.layer == 20) {
+			checkmaxmin( C.x - C.radius, C.x + C.radius, C.y - C.radius, C.y + C.radius, C.width );
+		  }
+		}
+		B.elements(E) {
+		  E.package.wires(W) {
+			if (W.layer == 20) { // *** Dimension in Packages ***
+			  if (W.arc) {
+				checkarc(W.arc.x1, W.arc.x2, W.arc.y1, W.arc.y2, W.arc.xc, W.arc.yc, W.arc.angle1, W.arc.angle2, W.arc.radius, W.width);
+			  }
+			  else {
+				checkmaxmin( W.x1, W.x2, W.y1, W.y2, W.width );
+			  }
+			}
+		  }
+		  E.package.circles(C) {
+			if (C.layer == 20) {
+			  checkmaxmin( C.x - C.radius, C.x + C.radius, C.y - C.radius, C.y + C.radius, C.width );
+			}
+		  }
+		}
+		
+		real x = WireLength(minX, maxX, 0,0);
+		real y = WireLength(minY, maxY, 0,0);
+		
+		if (uval == 1) {
+			// if mm, divide by 10 to get cm
+			x /= 10;
+			y /= 10;
+		
+		}
+		
+		output(filedir(boardname)+"size.txt") {
+			printf("%g\n%g", x , y );
+		}  
+	}

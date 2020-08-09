@@ -1,0 +1,22 @@
+string dir;
+
+if (schematic) {
+	schematic (S) {
+		dir = filedir(S.name);
+	}
+}
+else if (board) {
+	board (B) {
+		dir = filedir(B.name);
+	}
+}
+
+string cmd = "explorer file:///\""+dir+"\""; 
+
+/*dlgDialog("") {
+	dlgVBoxLayout {
+		dlgTextView(cmd);
+	} 
+};*/
+
+system(cmd);

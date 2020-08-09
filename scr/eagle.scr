@@ -1,0 +1,147 @@
+# Configuration Script
+#
+# This file can be used to configure the editor windows.
+
+# key mapping
+Assign F3 'Delete';
+Assign F4 'Name';
+Assign F5 'Value';
+Assign F6 'Smash';
+Assign F7 'Move';
+Assign AF7 'Group';
+Assign F9 'Route';
+Assign AF9 'Ripup';
+Assign F10 'Grid mm 2 on; Grid alt mm 0.5;';
+Assign AF10 'Grid mm 2 on; Grid alt mm 0.25;';
+Assign CAF10 'Grid mm 2 on; Grid alt mm 0.125;';
+Assign F11 'display none; display 1 16 17 18 19 20 21 22 23 24 39 40 45 49 51; display -22 -25 -26 -27 -28;';
+Assign AF11 'display none; display 17 18 20 21 23 25 29 31 39 45 51; display -26 -28;';
+Assign CF11 'display none; display 16 17 18 19 20 40; display -23 -24;';
+Assign SF11 'display none; display 1 17 18 19 20 39; display -23 -24;';
+Assign CAF11 'display none; display 1 16 17 18 19 20 21 22 23 24 25 39 45 49 51; display -26 -27 -28;';
+Assign F12 'show';
+Assign AF12 'info';
+
+Assign C+C 'Copy';
+Assign C+V 'Paste';
+
+BRD:
+
+Menu \
+ 'Generate Gerbers and Images : Run generate-gerbers-and-images.ulp;' \
+ 'Fetch QR : Run fetch-qr.ulp;' \
+ 'Import BMP : Run import-bmp.ulp;' \
+ 'Open Dir : Run open-dir.ulp;' \
+ 'Top and Bottom Routing : display none; display 1 16 17 18 19 20 21 22 39 40 46 51 52;' \
+ 'Top Routing : display none; display 1 17 18 19 20 21 39 46 51;' \
+ 'Bottom Routing : display none; display 16 17 18 19 20 22 40 46 52;' \
+ 'Top Silk : display none; display 17 18 19 20 21 25;' \
+ 'Bottom Silk : display none; display 17 18 19 20 22 26;'
+
+# Set default grid 
+Grid mm 2 on;
+Grid alt mm 0.5;
+
+
+#Menu Add Change Copy Delete Display Grid Group Move Name Quit Rect \
+#     Route Script Show Signal Split Text Value Via Window ';'  Wire Write Edit;
+
+#Get rid of the extra internal layers
+#Layer -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15
+
+Assign F8 ratsnest;
+Assign AF8 drc;
+
+#Setup SparkFun Defaults
+#Edited by Jordan
+
+Set WIRE_BEND 1; #Route with 45 degree angles
+Set Drill 0.4; #Make vias 0.4mm
+Change Shape Round; #Make vias round
+Change Width 0.3; #Routing width default to 0.3mm
+Change Isolate 0.3; #BHW Change polygon isolate to 0.3mm
+Change Font Vector; #Make text on board in vector font
+Change Ratio 10;
+
+CHANGE DUNIT MM OFF #BHW Change default units to inches [ON | OFF] [precision]
+
+#changes background color of board to black
+SET PALETTE BLACK;
+
+#Layer colors
+Set palette 16 0xFFFFFFFF; #Super white
+Set palette 24 0xFFC0C0C0; #Grey - color used when text is selected (anti palette location 16)
+Set color_layer 1 4;   #Set top layer to dark red
+Set color_layer 16 1;  #Set bottom layer to dark blue
+Set color_layer 17 2;  #Set pads to green
+Set color_layer 18 2;  #Set vias to green
+Set color_layer 19 6;  #Set unrouted to dark yellow
+Set color_layer 20 15; #Set dimension to light gray
+Set color_layer 21 16; #Set tPlace to white
+Set color_layer 22 14; #Set bPlace to yellow
+Set color_layer 23 15; #Set tOrigins to light gray
+Set color_layer 24 15; #Set bOrigins to light gray
+Set color_layer 25 16; #Set tNames to white
+Set color_layer 45 7;  #Set Holes to dark gray
+Set color_layer 51 6;  #Set tDocu to mellow yellow
+display none; display 1 16 17 18 19 20 21 22 23 24 45 51; display -25 -26 -27 -28;
+
+SCH:
+Grid Default; #BHW Reset the grid to the standard value
+Change Width 0.006; #BHW Set the 6mil rule
+Set XREF_LABEL_FORMAT %F%N/%S; #BHW Remove row & column from default
+Change XREF ON; #BHW Default to the labels we use (flag border)
+Change Size 0.05; #BHW Use 50mil flags (and text... exceeds minimum)
+
+Assign F2 'Window fit';
+
+Assign F9 'Net';
+Assign AF9 'Label';
+
+Assign F12 'show';
+Assign AF12 'info';
+
+Grid Default;
+Change Width 0.008;
+
+Menu \
+ 'BOM-EX : Run bom-ex.ulp;' \
+ 'Generate Diagrams : Run generate-diagrams.ulp;' \
+ 'Generate BOMs : Run generate-boms.ulp;' \
+ 'Wire List : Run sch-show-wire-numbers.ulp;' \
+ 'Insert Gap : Run sch-insert-gap-in-number-sequence.ulp;' \
+ 'Open Dir : Run open-dir.ulp;' 
+
+#Menu Add Bus Change Copy Delete Display Gateswap Grid Group Invoke Junction \
+#     Label Move Name Net Pinswap Quit Script Show Split Value Window ';' \
+#     Wire Write Edit;
+
+LBR:
+
+#Menu Close Export Open Script Write ';' Edit;
+
+#Assign F10 'Grid inch 0.05 on; Grid alt inch 0.005;';
+#Assign AF10 'Grid mm 1 on; Grid alt mm 0.1;';
+
+DEV:
+
+Grid Default On;
+#Menu Add Change Copy Connect Delete Display Export Grid Move Name Package \
+#     Prefix Quit Script Show Value Window ';' Write Edit;
+
+SYM:
+
+Grid Default On;
+Change Width 0.010;
+#Menu Arc Change Copy Cut Delete Display Export Grid Group Move Name Paste \
+#     Pin Quit Script Show Split Text Value Window ';' Wire Write Edit;
+
+PAC:
+
+Assign F8 'Copy';
+Grid mm 2 on;
+Grid alt mm 0.5;
+Change Width 0.2;
+Change Size 1;
+#Menu Add Change Copy Delete Display Grid Group Move Name Pad Quit \
+#     Script Show Smd Split Text Window ';' Wire Write Edit;

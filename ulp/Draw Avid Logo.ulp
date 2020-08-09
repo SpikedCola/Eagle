@@ -1,0 +1,33 @@
+string cmd;
+string lines[];
+int line = 0;
+
+// get current date - this is the whole reason for needing a ulp
+string date = t2string(time(), "yyyy-MM-dd");
+
+// add lines to array
+lines[line++] = "GRID MM 2;";
+lines[line++] = "LAYER 21;";
+lines[line++] = "CHANGE ALIGN bottom center;";
+lines[line++] = "TEXT 'AVID' SR0.000000 (-20.000 18.250);";
+lines[line++] = "CHANGE SIZE 5.000 (-20.000 18.250);";
+lines[line++] = "TEXT 'Growing Systems' SR0.000000 (-20.250 16.750);";
+lines[line++] = "WIRE 0.250 (-12.000 23.750) (-12.000 16.000);";
+lines[line++] = "WIRE 0.250 (-12.000 16.000) (-29.000 16.000);";
+lines[line++] = "WIRE 0.250 (-29.000 16.000) (-29.000 23.750);";
+lines[line++] = "WIRE 0.250 (-29.000 23.750) (-12.000 23.750);";
+lines[line++] = "CHANGE SIZE 1.250 (-20.250 16.750);";
+lines[line++] = "TEXT 'Rev. X.X' R0.000000 (-20.000 5.500);";
+lines[line++] = "CHANGE SIZE 1.000 (-20.000 5.500);";
+lines[line++] = "CHANGE ALIGN center;";
+lines[line++] = "TEXT '"+date+"' R0.000000 (-20.000 0.000);";
+lines[line++] = "CHANGE ALIGN bottom center;";
+lines[line++] = "TEXT 'Board\nName' R0.000000 (-20.000 7.500);";
+lines[line++] = "CHANGE SIZE 2.500 (-20.000 7.500);";
+lines[line++] = "GRID LAST";
+
+// make one big command to be run
+cmd = strjoin(lines, ' ');
+
+// do eet
+exit(cmd);

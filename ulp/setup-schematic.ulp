@@ -1,0 +1,68 @@
+string cmd;
+string lines[];
+int line = 0;
+string modelname;
+string date;
+
+// get current filename (just name, no ext or path)
+schematic(SCH) {
+	modelname = filesetext(filename(SCH.name), "");
+}
+
+// no point putting untitled in attriutes and making user change it
+if ("untitled" == modelname) {
+	dlgMessageBox("Error: Save schematic before running", "&OK");
+	exit(EXIT_SUCCESS);
+}
+
+// get current date
+date = t2string(time(), "yyyy-MM-dd");
+   
+// add some attributes and frame
+// turn on frame layer and set colour
+lines[line++] = "CHANGE DISPLAY OFF;";
+lines[line++] = "ATTRIBUTE * DRAFTER 'Jordan Skoblenick';";
+lines[line++] = "ATTRIBUTE * ENGINEER 'Jon Pounder';";
+lines[line++] = "ATTRIBUTE * PROJECT '"+modelname+"';";
+lines[line++] = "ATTRIBUTE * DRAWING_NUMBER 'AGS-XXXD';";
+lines[line++] = "ATTRIBUTE * MODEL 'AGS-XXX';";
+lines[line++] = "ATTRIBUTE * REVISION '1';";
+lines[line++] = "ATTRIBUTE * DATE '"+date+"';";
+lines[line++] = "ATTRIBUTE * DATABASE 'C:\\EAGLE-7.6.0\\main-digikey-parts-database.txt';";
+lines[line++] = "ADD 'FRAME-8.5X11@Skoba-Symbols' G\$99 (0 0);";
+lines[line++] = "ATTRIBUTE G\$99 TITLE 'Main';";
+lines[line++] = "DESCRIPTION 'Main';";
+lines[line++] = "SET COLOR_LAYER 101 15;";
+lines[line++] = "SET FILL_LAYER 101 1;";
+lines[line++] = "DISPLAY 101;";
+
+// add revision history sheet
+lines[line++] = "EDIT .s99;";
+lines[line++] = "ADD 'FRAME-8.5X11@Skoba-Symbols' G$98 (0 0);";
+lines[line++] = "ATTRIBUTE G\$98 TITLE 'Revision Log';";
+lines[line++] = "DESCRIPTION 'Revision Log';";
+
+// draw revision log table
+lines[line++] = "CHANGE ALIGN CENTER;";
+lines[line++] = "CHANGE LAYER 97;";
+lines[line++] = "CHANGE SIZE 0.1;";
+lines[line++] = "CHANGE RATIO 15;";
+lines[line++] = "TEXT 'Rev' (.4 8.2);";
+lines[line++] = "TEXT 'Date' (1 8.2);";
+lines[line++] = "TEXT 'Changes' (1.8 8.2);";
+lines[line++] = "CHANGE WIDTH 0.008;";
+lines[line++] = "WIRE (.6 8.3) (.6 7.9);";
+lines[line++] = "WIRE (1.4 8.3) (1.4 7.9);";
+lines[line++] = "WIRE (.2 8.1) (3.7 8.1);";
+lines[line++] = "CHANGE SIZE 0.07;";
+lines[line++] = "CHANGE RATIO 10;";
+lines[line++] = "TEXT '1' (.4 8);";
+lines[line++] = "TEXT '"+date+"' (1 8);";
+lines[line++] = "CHANGE ALIGN CENTER LEFT;";
+lines[line++] = "TEXT '- initial version' (1.5 8);";
+
+// make one big command to be run
+cmd = strjoin(lines, ' ');
+
+// do eet
+exit(cmd);
