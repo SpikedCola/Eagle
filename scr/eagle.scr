@@ -35,8 +35,8 @@ Menu \
  'Top and Bottom Routing : display none; display 1 16 17 18 19 20 21 22 23 34 39 40 46 51 52;' \
  'Top Routing : display none; display 1 17 18 19 20 21 23 39 46 51;' \
  'Bottom Routing : display none; display 16 17 18 19 20 22 24 40 46 52;' \
- 'Top Silk : display none; display 17 18 19 20 21 25;' \
- 'Bottom Silk : display none; display 17 18 19 20 22 26;'
+ 'Top Silk : display none; display 17 18 19 20 21 23 25;' \
+ 'Bottom Silk : display none; display 17 18 19 20 22 24 26;'
 
 # Set default grid 
 Grid mm 2 on;
